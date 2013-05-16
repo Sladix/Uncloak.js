@@ -1,6 +1,6 @@
 var Uncloack = {
-	defaultOptions : {color: "#FFF",rows:3,type:"ltr"},
-	animOptions: {type:"simple",duree:3000},
+	defaultOptions : {color: "#FFF",rows:3,type:"ltr",randomColor:false,seed:"none"},
+	animOptions: {type:"simple",duree:2000},
 	init: function(element,options){
 		//On fusionne les options avec celles par défaut
 		this.options = $.extend(this.defaultOptions,options);
@@ -21,11 +21,13 @@ var Uncloack = {
 		$('#uncloack-wrapper').append(this.container);
 		//Temporaire, nombre de carrés verticalement
 		this.hElNum = this.options.rows;
-		this.faceSize = Math.ceil(this.element.outerHeight() / this.hElNum);
+		this.faceSize = Math.floor(this.element.outerHeight() / this.hElNum);
+		//if(this.faceSize%this.hElNum != 0)
+			//this.faceSize = Math.ceil(this.element.outerHeight() / (this.hElNum+1));
 		this.wElNum = Math.ceil(this.element.outerWidth() / this.faceSize);
 		//Création des carrés
-		var c = 0
-
+		var id = 0
+		var letters = ["A","B","C","D","E","F"];
 		for(var i = 0;i <= this.wElNum;i++)
 		{
 			for (var j = 0; j < this.hElNum; j++) {
@@ -43,10 +45,42 @@ var Uncloack = {
 
 				el.css('top',(j*this.faceSize)+"px");
 				el.css('left',(i*this.faceSize)+"px");
-				el.css('backgroundColor',this.options.color);
-				el.attr("id","uncloack-face-"+c);
+				var coolor = this.options.color;
+				if (this.options.randomColor) {
+
+					if(this.options.seed != "none")
+					{
+
+						coolor = this.options.seed;
+						y=4;
+					}
+					else
+					{
+						y = 4;
+						coolor = '#';
+					}
+					//TODO générer la seed si pas en param
+					var x = 0;
+					while(x<y){
+						//TODO, limit range
+						var l = Math.round(Math.random()*1);
+						if (l==1)
+						{
+							l =  Math.floor((Math.random()*5)+1);
+							coolor+= letters[l];
+						}
+						else
+						{
+							coolor+= Math.floor((Math.random()*9)+1)+'';
+						}
+						x++;
+					}
+					coolor+="EA";
+				}
+				el.css('background-color',coolor.toString());
+				el.attr("id","uncloack-face-"+id);
 				el.addClass("uncloack-face");
-				c++;
+				id++;
 				this.container.append(el);
 			}
 		}
@@ -61,6 +95,7 @@ var Uncloack = {
 		var hElNum = this.hElNum;
 		var wElNum = this.wElNum;
 		var options = this.animOptions;	
+		options.color = this.defaultOptions.color;
 		var duree = 0;
 		$(".uncloack-face").each(function (i,e) {
 			duree = (r*Math.ceil(options.duree/wElNum));
@@ -68,15 +103,9 @@ var Uncloack = {
 				var pos = $(e).position();
 				var tleft = (pos.left-faceSize);
 				var w = faceSize*2;
-				var c = "#FF";
-				var letters = ["A","B","C","D","E","F"];
-				for (var i =  0; i < 4; i++) {
-
-					c+=	Math.floor((Math.random()*9)+1)+'';
-				};
-				
 				/*$(e).css('background',c);*/
-				$(e).animate({left:tleft+"px",width:w+"px",backgroundColor:c},{duration:700});
+
+				$(e).animate({left:tleft+"px",width:w+"px",opacity:0},{duration:700});
 			},duree);
 			c++;
 			if (c>hElNum) {c = 0;r++}
