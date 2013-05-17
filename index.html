@@ -1,0 +1,36 @@
+<html>
+<head>
+	<title>Uncloack example</title>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+	<script type="text/javascript" src="uncloack.js"></script>
+</head>
+<style type="text/css">
+#test{
+	width: 200px;
+	height: 100px;
+	margin-top: 30px;
+	text-align: center;
+	padding: 30px
+}
+#test h1
+{
+	font-family: Helvetica;
+}
+</style>
+
+<body>
+	<div id="test">
+		<h1>Uncloack.js</h1>
+	</div>
+<script type="text/javascript">
+var u = Object.create(Uncloack);
+u.init("#test",{
+	color:"#eeeee",
+	rows:5,
+	randomColor:true,
+	seed:"#22000"
+});
+$(".uncloack-container").click(function(){u.reveal({duree:500,type:"random"})});
+</script>
+</body>
+</html>

@@ -1,33 +1,40 @@
 var Uncloack = {
-	defaultOptions : {color: "#FFF",rows:3,type:"ltr",randomColor:false,seed:"none"},
+	defaultOptions : {color: "#FFF",rows:3,type:"classic",randomColor:false,seed:"none"},
 	animOptions: {type:"simple",duree:2000},
 	init: function(element,options){
 		//On fusionne les options avec celles par défaut
 		this.options = $.extend(this.defaultOptions,options);
 		this.element = $(element);
-		this.wrapper = $(document.createElement('div'));
-		this.wrapper.attr('id','uncloack-wrapper');
-		this.wrapper.css('position','relative');
-		//On ajoute le wrapper
-		this.element.wrap(this.wrapper);
+		//Temporaire, nombre de carrés verticalement
+		this.hElNum = this.options.rows;
+		this.faceSize = Math.ceil(this.element.outerHeight() / this.hElNum);
+		//On regarde si notre conteneur est là, sinon ou l'ajoute, ainsi que le style des transitions.
+		if(!this.element.parent().hasClass('uncloack-wrapper'))
+		{
+			this.wrapp();
+			if(typeof $('#uncloack-transitions').attr('type') == "undefined")
+			{
+				$('body').append('<style id="uncloack-transitions" type="text/css">.uncloack-scale{-webkit-transform:scale(0.2);}.uncloack-rotate{-webkit-transform:rotate(90deg);)}</style>');
+			}
+		}
 
 		this.container = $(document.createElement('div'));
+		this.container.attr('class','uncloack-container');
 		this.container.css('position','absolute');
+		this.container.css('cursor','pointer');
 		this.container.css('top','0px');
 		this.container.css('left','0px');
 		this.container.css('height','100%');
 		this.container.css('width','100%');
 		//Puis le conteneur
-		$('#uncloack-wrapper').append(this.container);
-		//Temporaire, nombre de carrés verticalement
-		this.hElNum = this.options.rows;
-		this.faceSize = Math.floor(this.element.outerHeight() / this.hElNum);
+		this.element.parent().append(this.container);
+		
 		//if(this.faceSize%this.hElNum != 0)
 			//this.faceSize = Math.ceil(this.element.outerHeight() / (this.hElNum+1));
 		this.wElNum = Math.ceil(this.element.outerWidth() / this.faceSize);
 		//Création des carrés
 		var id = 0
-		var letters = ["A","B","C","D","E","F"];
+		
 		for(var i = 0;i <= this.wElNum;i++)
 		{
 			for (var j = 0; j < this.hElNum; j++) {
@@ -47,35 +54,7 @@ var Uncloack = {
 				el.css('left',(i*this.faceSize)+"px");
 				var coolor = this.options.color;
 				if (this.options.randomColor) {
-
-					if(this.options.seed != "none")
-					{
-
-						coolor = this.options.seed;
-						y=4;
-					}
-					else
-					{
-						y = 4;
-						coolor = '#';
-					}
-					//TODO générer la seed si pas en param
-					var x = 0;
-					while(x<y){
-						//TODO, limit range
-						var l = Math.round(Math.random()*1);
-						if (l==1)
-						{
-							l =  Math.floor((Math.random()*5)+1);
-							coolor+= letters[l];
-						}
-						else
-						{
-							coolor+= Math.floor((Math.random()*9)+1)+'';
-						}
-						x++;
-					}
-					coolor+="EA";
+					coolor = this.generateColor(this.options);
 				}
 				el.css('background-color',coolor.toString());
 				el.attr("id","uncloack-face-"+id);
@@ -84,6 +63,33 @@ var Uncloack = {
 				this.container.append(el);
 			}
 		}
+	},
+	wrapp : function(){
+		var m = this.element.css("margin");
+		this.element.css('margin','0');
+		this.wrapper = $(document.createElement('div'));
+		this.wrapper.attr('class','uncloack-wrapper');
+		this.wrapper.css('position','relative');
+		this.wrapper.css('margin',m);
+		//On ajoute le wrapper
+		this.element.wrap(this.wrapper);
+	},
+	generateColor:function(options)
+	{
+		if(options.seed != "none")
+		{
+			var base = this.hexToHsl(options.seed);
+			var h = base[0]*360;
+	    	var s = base[1]*100/*+this.rand(-20, 20)*/;
+	    	var l = base[2]*100+this.rand(-10, 10);
+		}
+		else
+		{	
+			var h = this.rand(1, 360);
+	    	var s = this.rand(10, 100);
+	    	var l = this.rand(30, 100);
+		}
+	    return 'hsl(' + h + ',' + s + '%,' + l + '%)';
 	},
 	reveal: function(uanimOptions){
 		this.animOptions = $.extend(this.animOptions,uanimOptions);
@@ -97,24 +103,94 @@ var Uncloack = {
 		var options = this.animOptions;	
 		options.color = this.defaultOptions.color;
 		var duree = 0;
+		var animations = ["classic","simple","rotation","scale"];
+		var animRand = this.rand(0,animations.length-1);
+		
+		
+		if(options.type == "random")
+		{
+			options.type = animations[animRand];
+		}
 		$(".uncloack-face").each(function (i,e) {
-			duree = (r*Math.ceil(options.duree/wElNum));
-			setTimeout(function () {
-				var pos = $(e).position();
-				var tleft = (pos.left-faceSize);
-				var w = faceSize*2;
-				/*$(e).css('background',c);*/
+			var pos = $(e).position();
+			duree = (r*Math.round(options.duree/wElNum));
+			switch(options.type)
+			{
+				case "simple":
+				var aduree = 400;
+				var aoptions = {left:(0-faceSize)+"px",
+							width:faceSize+"px",
+							opacity:1
+						   };
+				break;
+				case "upndown":
 
-				$(e).animate({left:tleft+"px",width:w+"px",opacity:0},{duration:700});
+				break;
+				case "rotation":
+				var aduree = {duration:400};
+				$(e).css('-webkit-transition','all '+(options.duree/1000).toFixed(2)+'s ease');
+				var aoptions = {opacity:0};
+				$(e).addClass('uncloack-rotate');
+				break;
+				case "scale":
+				var aduree = {duration:400};
+				$(e).css('-webkit-transition','all '+(options.duree/1000).toFixed(2)+'s ease');
+				var aoptions = {opacity:0};
+				$(e).addClass('uncloack-scale');
+				break;
+				default:
+				case "classic":
+				var aduree = 1000;
+				var aoptions = {left:(pos.left+faceSize)+"px",
+							width:(faceSize*2)+"px",
+							opacity:0
+						   };
+				break;
+			}
+			//On lance l'animation
+			setTimeout(function () {
+				$(e).animate(aoptions,aduree,function(){$(this).remove()});
 			},duree);
 			c++;
 			if (c>hElNum) {c = 0;r++}
 		});
+		var element = this.element;
+		var add;
+		(options.duree > 3000 && aduree > 500)?add = 0:add=600;
+		setTimeout(function () {
+			$(element).next().remove();
+		},options.duree+(wElNum*hElNum)+add);
 		/*for (var i = 0; i < this.wElNum; i+this.hElNum) {
 			setTimeout(function () {
 				$("#uncloack-face-"+i).animate({left:"-42px",opacity:0},{duration:1000});
 				//$("#uncloack-face-"+i).nextAll().slice(0,(this.hElNum-1)).animate({left:"-42px",opacity:0},{duration:1000});
 			},(i*20));
 		};*/
+	},
+	rand: function (min, max) {
+	    return parseInt(Math.random() * (max-min+1), 10) + min;
+	},
+	hexToHsl: function (hex){
+		var r = parseInt(hex.substr(1,2), 16); // Grab the hex representation of red (chars 1-2) and convert to decimal (base 10).
+		var g = parseInt(hex.substr(3,2), 16);
+		var b = parseInt(hex.substr(5,2), 16);
+	    r /= 255, g /= 255, b /= 255;
+	    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+	    var h, s, l = (max + min) / 2;
+
+	    if(max == min){
+	        h = s = 0; // achromatic
+	    }else{
+	        var d = max - min;
+	        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+	        switch(max){
+	            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+	            case g: h = (b - r) / d + 2; break;
+	            case b: h = (r - g) / d + 4; break;
+	        }
+	        h /= 6;
+	    }
+
+	    return [h, s, l];
 	}
 }
