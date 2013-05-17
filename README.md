@@ -5,7 +5,7 @@ Jquery plugin to reveal your html elements
 
 Usage
 ========
-<code>
+<pre><code>
 var u = Object.create(Uncloack);
 u.init("#test",{
 	color:"#eeeee",
@@ -15,4 +15,4 @@ u.init("#test",{
 });
 //Provisoir, vous pouvez aussi mettre votre element trigger
 $(".uncloack-container").click(function(){u.reveal({duree:500,type:"random"})});
-</code>
+</code></pre>
