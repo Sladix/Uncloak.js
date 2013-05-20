@@ -14,7 +14,7 @@ var Uncloack = {
 			this.wrapp();
 			if(typeof $('#uncloack-transitions').attr('type') == "undefined")
 			{
-				$('body').append('<style id="uncloack-transitions" type="text/css">.uncloack-scale{-webkit-transform:scale(0.2);}.uncloack-rotate{-webkit-transform:rotate(90deg);)}</style>');
+				$('body').append('<style id="uncloack-transitions" type="text/css">.uncloack-rotate-scale{-webkit-transform:rotate(180deg) scale(0.2);}.uncloack-scale{-webkit-transform:scale(0.2);}.uncloack-rotate{-webkit-transform:rotate(90deg);)}</style>');
 			}
 		}
 
@@ -33,7 +33,22 @@ var Uncloack = {
 			//this.faceSize = Math.ceil(this.element.outerHeight() / (this.hElNum+1));
 		this.wElNum = Math.ceil(this.element.outerWidth() / this.faceSize);
 		//Création des carrés
-		var id = 0
+		var id = 0;
+		if(this.options.seed = "none" && this.options.randomColor == true)
+		{
+			this.options.seed = '#';
+			
+			var letters = ["A","B","C","D","E","F"];
+			for (var i = 0; i < 3; i++) {
+				var l = Math.round(Math.random());
+				if (l==1) {
+					this.options.seed+= letters[l]+letters[l];
+				}else
+				{
+					this.options.seed+= this.rand(0,9)+''+this.rand(0,9)+'';
+				}
+			};
+		}
 		
 		for(var i = 0;i <= this.wElNum;i++)
 		{
@@ -54,7 +69,7 @@ var Uncloack = {
 				el.css('left',(i*this.faceSize)+"px");
 				var coolor = this.options.color;
 				if (this.options.randomColor) {
-					coolor = this.generateColor(this.options);
+					coolor = this.generateColor(this.options.seed);
 				}
 				el.css('background-color',coolor.toString());
 				el.attr("id","uncloack-face-"+id);
@@ -74,21 +89,16 @@ var Uncloack = {
 		//On ajoute le wrapper
 		this.element.wrap(this.wrapper);
 	},
-	generateColor:function(options)
+	generateColor:function(seed)
 	{
-		if(options.seed != "none")
-		{
-			var base = this.hexToHsl(options.seed);
-			var h = base[0]*360;
-	    	var s = base[1]*100/*+this.rand(-20, 20)*/;
-	    	var l = base[2]*100+this.rand(-10, 10);
-		}
-		else
-		{	
-			var h = this.rand(1, 360);
-	    	var s = this.rand(10, 100);
-	    	var l = this.rand(30, 100);
-		}
+
+	
+		var base = this.hexToHsl(seed);
+
+
+		var h = base[0]*360;
+    	var s = base[1]*100/*+this.rand(-20, 20)*/;
+    	var l = base[2]*100+this.rand(-10, 10);
 	    return 'hsl(' + h + ',' + s + '%,' + l + '%)';
 	},
 	reveal: function(uanimOptions){
@@ -103,7 +113,7 @@ var Uncloack = {
 		var options = this.animOptions;	
 		options.color = this.defaultOptions.color;
 		var duree = 0;
-		var animations = ["classic","simple","rotation","scale"];
+		var animations = ["classic","simple","rotation","scale","rotatescale"];
 		var animRand = this.rand(0,animations.length-1);
 		
 		
@@ -114,6 +124,7 @@ var Uncloack = {
 		$(".uncloack-face").each(function (i,e) {
 			var pos = $(e).position();
 			duree = (r*Math.round(options.duree/wElNum));
+			var addition = "undefined";
 			switch(options.type)
 			{
 				case "simple":
@@ -128,15 +139,21 @@ var Uncloack = {
 				break;
 				case "rotation":
 				var aduree = {duration:400};
-				$(e).css('-webkit-transition','all '+(options.duree/1000).toFixed(2)+'s ease');
+				$(e).css('-webkit-transition','all '+((options.duree/2)/1000).toFixed(2)+'s ease');
 				var aoptions = {opacity:0};
-				$(e).addClass('uncloack-rotate');
+				addition = 'uncloack-rotate';
 				break;
 				case "scale":
 				var aduree = {duration:400};
-				$(e).css('-webkit-transition','all '+(options.duree/1000).toFixed(2)+'s ease');
+				$(e).css('-webkit-transition','all '+((options.duree/2)/1000).toFixed(2)+'s ease');
 				var aoptions = {opacity:0};
-				$(e).addClass('uncloack-scale');
+				addition = 'uncloack-scale';
+				break;
+				case "rotatescale":
+				var aduree = {duration:400};
+				$(e).css('-webkit-transition','all '+((options.duree/2)/1000).toFixed(2)+'s ease');
+				var aoptions = {opacity:0};
+				addition = 'uncloack-rotate-scale';
 				break;
 				default:
 				case "classic":
@@ -149,6 +166,8 @@ var Uncloack = {
 			}
 			//On lance l'animation
 			setTimeout(function () {
+				if(addition != "undefined")
+					$(e).addClass(addition);
 				$(e).animate(aoptions,aduree,function(){$(this).remove()});
 			},duree);
 			c++;

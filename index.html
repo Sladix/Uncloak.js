@@ -5,8 +5,12 @@
 	<script type="text/javascript" src="uncloack.js"></script>
 </head>
 <style type="text/css">
+body{
+	padding: 0;
+	margin: 0;
+	overflow: hidden;
+}
 #test{
-	width: 200px;
 	height: 100px;
 	margin-top: 30px;
 	text-align: center;
@@ -15,22 +19,28 @@
 #test h1
 {
 	font-family: Helvetica;
+	font-variant: small-caps;
+	color: #ccc;
+	text-shadow:0px 1px 1px #999;
+}
+#test h1 span
+{
+	color:#eee;
 }
 </style>
 
 <body>
 	<div id="test">
-		<h1>Uncloack.js</h1>
+		<h1>Un<span>cloack</span>.js</h1>
 	</div>
 <script type="text/javascript">
 var u = Object.create(Uncloack);
 u.init("#test",{
 	color:"#eeeee",
 	rows:5,
-	randomColor:true,
-	seed:"#22000"
+	randomColor:true
 });
-$(".uncloack-container").click(function(){u.reveal({duree:500,type:"random"})});
+$(".uncloack-container").click(function(){u.reveal({duree:2000,type:"rotatescale"})});
 </script>
 </body>
 </html>
