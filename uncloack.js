@@ -34,7 +34,7 @@ var Uncloack = {
 		this.wElNum = Math.ceil(this.element.outerWidth() / this.faceSize);
 		//Création des carrés
 		var id = 0;
-		if(this.options.seed = "none" && this.options.randomColor == true)
+		if(this.options.seed == "none" && this.options.randomColor == true)
 		{
 			this.options.seed = '#';
 			
